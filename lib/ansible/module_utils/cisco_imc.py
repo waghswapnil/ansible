@@ -11,7 +11,8 @@ import os
 def _get_headers():
     headers = {}
     keys = ["x-barracuda-account", "x-barracuda-user", "x-barracuda-session",
-            "x-barracuda-epprivileges", "x-barracuda-serviceadmin"]
+            "x-barracuda-epprivileges", "x-barracuda-serviceadmin",
+            "x-barracuda-target"]
     for key in keys:
         headers[key] = os.environ.get(key)
 
@@ -40,7 +41,9 @@ class ImcConnection():
             return server
 
         headers = _get_headers()
-        redirect_uri = "http://casanova.default.svc.cluster.local/epproxy"
+        target = headers["x-barracuda-target"]
+        redirect_uri = "http://casanova.default.svc.cluster.local/epproxy?target=" + target
+        print(ansible["ip"], redirect_uri, headers)
 
         from imcsdk.imchandle import ImcHandle
         results = {}
@@ -53,7 +56,6 @@ class ImcConnection():
                                proxy=ansible["proxy"],
                                redirect_uri=redirect_uri,
                                headers=headers)
-            print(ansible["ip"], headers)
             server.login()
         except Exception as e:
             results["msg"] = str(e)
